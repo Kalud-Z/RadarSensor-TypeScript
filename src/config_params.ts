@@ -5,7 +5,7 @@
 
 // @ts-nocheck
 import { states_struct, status_clearall, struct } from './basics.js';
-import { cfg_file_current, rc_state, rc_states } from './controls.js';
+import { cfg_file_current, rc_state, rc_states, set_cfg_file_current } from './controls.js';
 import { rc_cmds, send_cmd } from './commands.js';
 
 
@@ -53,7 +53,7 @@ export  function check_parameter(parameter) {
 
     case "I":
       // int: auto correct values if limits exceeded
-      value = parseInt($("#" + input_id).val());
+      value = parseInt($("#" + input_id).val() as string);
       if (isNaN(value)) { value = 0; $("#" + input_id).val(value) }
       min = cfg_parameter_value[i].allowed_values.split(RE_TOKEN_DELIMS)[0];
       max = cfg_parameter_value[i].allowed_values.split(RE_TOKEN_DELIMS)[1];
@@ -64,14 +64,14 @@ export  function check_parameter(parameter) {
 
     case "F":
       // float: auto correct values if limits exceeded
-      value = parseFloat($("#" + input_id).val());
+      value = parseFloat($("#" + input_id).val() as string);
       if (isNaN(value)) value = 0;
       min = cfg_parameter_value[i].allowed_values.split(RE_TOKEN_DELIMS)[0];
       max = cfg_parameter_value[i].allowed_values.split(RE_TOKEN_DELIMS)[1];
       if (min != NO_LIMIT && value < parseFloat(min)) {  $("#" + input_id).val(parseFloat(min)) }
       if (max != NO_LIMIT && value > parseFloat(max)) {  $("#" + input_id).val(parseFloat(max)) }
       // show float values in exponential number format
-      $("#" + input_id).val(parseFloat($("#" + input_id).val()).toExponential(FLOAT_FRACTION_DIGITS));
+      $("#" + input_id).val(parseFloat($("#" + input_id).val() as string).toExponential(FLOAT_FRACTION_DIGITS));
       break;
 
     default:
@@ -82,7 +82,8 @@ export  function check_parameter(parameter) {
   value = $("#" + input_id).val() as number;
   if (value_old != value) {
     send_cmd(rc_cmds.CMD_RC_CFG_VALUE, name, value);
-    cfg_file_current = ''; // clear name of currently loaded cfg file if a parameter value has changed
+    // cfg_file_current = ''; // clear name of currently loaded cfg file if a parameter value has changed
+    set_cfg_file_current(''); // clear name of currently loaded cfg file if a parameter value has changed
     $("#ctl_cfg_file_load_name").val("");
   }
 

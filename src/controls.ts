@@ -7,7 +7,7 @@
 // @ts-nocheck
 
 import { states_struct, status_clearall, struct } from './basics.js';
-import { rc_cmd_sent, rc_cmds, send_cmd } from './commands.js';
+import { rc_cmd_sent, rc_cmds, send_cmd, set_rc_cmd_sent } from './commands.js';
 import { update_canvas_overlays } from './graphics.js';
 import { cfg_parameter_value } from './config_params.js';
 
@@ -18,7 +18,7 @@ import { cfg_parameter_value } from './config_params.js';
 export const trigger_id_timeout = 0;
 export const trigger_id_internal = 1;
 export const trigger_id_external_hw = 2;
-export var trigger_id;
+export let trigger_id;  export function set_trigger_id(k) { trigger_id = k }
 
 // rc state
 export const rc_states = {
@@ -29,7 +29,7 @@ export const rc_states = {
 };
 Object.freeze(rc_states);
 
-export var rc_state;
+export let rc_state;
 export function set_rc_state(state) {  rc_state = state }
 
 export const controls_states = [
@@ -39,15 +39,14 @@ export const controls_states = [
 
 
 // default number of runs
-export var ctl_nruns_default = 0;
+export let ctl_nruns_default = 0;
 
 
 // cfg file list
-export var cfg_file_current;
-export function set_cfg_file_current(file) { cfg_file_current = file }
+export let cfg_file_current; export function set_cfg_file_current(file) { cfg_file_current = file }
 
 
-export var cfg_file_list;
+export let cfg_file_list;
 export function set_cfg_file_list(list) { cfg_file_list = list }
 
 // display modes
@@ -59,18 +58,18 @@ export const display_mode_info_struct = struct(
 
 // set required node names for display modes
 // and matches between pipeline names and display modes
-export var display_mode_info = [
+export let display_mode_info = [
   display_mode_info_struct('R/D Map',	'FFT2ABSLOG', 'RDMAP'),
   display_mode_info_struct('CFAR',	'CFAR'		, 'CFAR')
 ];
 
-export var display_mode_combined = "Combined";
+export let display_mode_combined = "Combined";
 
-export var display_mode_list;
-export var display_node_index_list;
-export var display_mode;
+export let display_mode_list; export function set_display_mode_list(k) { display_mode_list = k }
+export let display_node_index_list;  export function set_display_node_index_list(k) { display_node_index_list = k }
+export let display_mode;
 
-export var node_index_required;
+export let node_index_required;
 
 export function run_stop_handler() {
   $("#ctl_run").attr("disabled", "disabled");
@@ -101,7 +100,7 @@ export function quit_handler() {
   $("#ctl_quit").attr("disabled", "disabled");
 }
 
-export let ctl_nruns;
+export let ctl_nruns; export function set_ctl_nruns(k) { ctl_nruns = k }
 
 export function nruns_handler() {
   ctl_nruns = $('#ctl_nruns').val();
@@ -116,7 +115,12 @@ export function cfg_file_load_handler() {
 export function cfg_file_save_handler() {
   if ($('#ctl_cfg_file_save_name').val() != '') {
     // ignore path, use filename only
-    var path_elements = $('#ctl_cfg_file_save_name').val().split(/[\\\/]+/);
+
+    let temp:any = $('#ctl_cfg_file_save_name').val();
+    let path_elements = temp.split(/[\\\/]+/);
+    // let path_elements = $('#ctl_cfg_file_save_name').val().split(/[\\\/]+/);
+
+
     send_cmd(rc_cmds.CMD_RC_CFG_SAVE, path_elements[path_elements.length - 1]);
     $("#ctl_cfg_file_save_name").val(''); // clear cfg file name
   }
@@ -193,7 +197,7 @@ export function update_trigger() {
 export function update_cfg_file_list() {
   $("#ctl_cfg_file_load_name option").remove();  // remove old cfg files
 
-  for (var index in cfg_file_list) {  // append cfg files to listbox
+  for (let index in cfg_file_list) {  // append cfg files to listbox
     $("#ctl_cfg_file_load_name").append("<option>" + cfg_file_list[index] + "</option>");
   }
   $("#ctl_cfg_file_load_name").val(cfg_file_current);  // set previously stored cfg file
@@ -203,7 +207,7 @@ export function update_cfg_file_list() {
 // update display mode list
 export function update_display_mode_list() {
   $("#ctl_display_mode option").remove();  // remove old display modes
-  for (var index in display_mode_list) { // append display modes to listbox
+  for (let index in display_mode_list) { // append display modes to listbox
     $("#ctl_display_mode").append("<option>" + display_mode_list[index] + "</option>");
 
     // select display mode if it fits the current pipeline
@@ -280,7 +284,8 @@ export function init_controls() {
   $('#ctl_cfg_file_load_name').val(cfg_file_current);
   $('#ctl_nruns').val(ctl_nruns_default);
   rc_state = rc_states.RC_STATE_UNDEFINED;
-  rc_cmd_sent = -1;
+  // rc_cmd_sent = -1;
+  set_rc_cmd_sent(-1)
 
   trigger_id = trigger_id_internal;
   $('#ctl_trigger_source').val('Internal');

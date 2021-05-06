@@ -2,9 +2,10 @@ import { arraybuffer2string, status_clear, status_set, struct, ws, ws_state, ws_
 import { TYPE_HEADER_SIZE_BYTES } from './headers.js';
 import { cfg_parameter_count, cfg_parameter_value, cfg_parameter_value_struct, cfg_parameters_states, init_parameters, RE_TOKEN_DELIMS, set_cfg_parameter_count, TOKEN_DELIMITER, update_parameters, } from './config_params.js';
 import { clear_data_invalid_marker, graphics_states, nodes_names, nodes_omodes, set_data_invalid_marker, set_nodes_names, set_nodes_omodes, update_graphics, } from './graphics.js';
-import { controls_states, ctl_nruns, display_mode_info, display_mode_list, display_node_index_list, init_controls, rc_states, set_cfg_file_current, set_cfg_file_list, set_rc_state, trigger_id, update_cfg_file_list, update_controls, update_display_mode_list, update_trigger, } from './controls.js';
+import { controls_states, display_mode_info, display_mode_list, display_node_index_list, init_controls, rc_states, set_cfg_file_current, set_cfg_file_list, set_ctl_nruns, set_display_mode_list, set_display_node_index_list, set_rc_state, set_trigger_id, update_cfg_file_list, update_controls, update_display_mode_list, update_trigger, } from './controls.js';
 export const rc_cmds = {
     'CMD_RC_CFG_UNKNOWN': 0,
+    'CMD_RC_UNKNOWN': 0,
     'CMD_RC_RUN_GO': 1,
     'CMD_RC_RUN_TRIGGER': 2,
     'CMD_RC_RUN_HALT': 3,
@@ -49,24 +50,25 @@ export const cmds = [
     cmds_struct(rc_cmds.CMD_RC_FFIN_ADD, 'rc_ffin_add', 'ia', 0),
     cmds_struct(rc_cmds.CMD_RC_FFOUT_ADD, 'rc_ffout_add', 'oa', 0)
 ];
-export var rc_cmd_sent = -1;
+export let rc_cmd_sent = -1;
+export function set_rc_cmd_sent(k) { rc_cmd_sent = k; }
 export function cmd_short2rc_cmd(cmd_short) {
-    var rc_cmd = rc_cmds.CMD_RC_UNKNOWN;
+    let rc_cmd = rc_cmds.CMD_RC_UNKNOWN;
     cmds.forEach(key => (key.cmd_short == cmd_short) && (rc_cmd = key.rc_cmd));
     return rc_cmd;
 }
 export function cmd_long2rc_cmd(cmd_long) {
-    var rc_cmd = rc_cmds.CMD_RC_UNKNOWN;
+    let rc_cmd = rc_cmds.CMD_RC_UNKNOWN;
     cmds.forEach(key => (key.cmd_long == cmd_long) && (rc_cmd = key.rc_cmd));
     return rc_cmd;
 }
 export function rc_cmd2cmd_short(rc_cmd) {
-    var cmd_short = 'xx';
+    let cmd_short = 'xx';
     cmds.forEach(key => (key.rc_cmd == rc_cmd) && (cmd_short = key.cmd_short));
     return cmd_short;
 }
 export function send_cmd(rc_cmd, ...args) {
-    var sendstring = rc_cmd2cmd_short(rc_cmd) + TOKEN_DELIMITER + [...args].join(TOKEN_DELIMITER) + "\n";
+    let sendstring = rc_cmd2cmd_short(rc_cmd) + TOKEN_DELIMITER + [...args].join(TOKEN_DELIMITER) + "\n";
     if (ws_state == ws_states.WS_STATE_CONNECTED) {
         if (rc_cmd_sent == -1) {
             ws.send(sendstring);
@@ -90,10 +92,10 @@ export function request_initial_config() {
     send_cmd(rc_cmds.CMD_RC_NODES_OMODES);
 }
 export function process_cmd(data_buffer) {
-    var cmd_array = arraybuffer2string(data_buffer.slice(TYPE_HEADER_SIZE_BYTES)).split(RE_TOKEN_DELIMS);
+    let cmd_array = arraybuffer2string(data_buffer.slice(TYPE_HEADER_SIZE_BYTES)).split(RE_TOKEN_DELIMS);
     if (cmd_array[cmd_array.length - 1] == "")
         cmd_array = cmd_array.slice(0, cmd_array.length - 1);
-    var rc_cmd = cmd_short2rc_cmd(cmd_array[0]);
+    let rc_cmd = cmd_short2rc_cmd(cmd_array[0]);
     if (rc_cmd == rc_cmds.CMD_RC_UNKNOWN)
         rc_cmd = cmd_long2rc_cmd(cmd_array[0]);
     if (rc_cmd == rc_cmds.CMD_RC_CFG_UNKNOWN) {
@@ -102,12 +104,13 @@ export function process_cmd(data_buffer) {
     }
     if (rc_cmd == rc_cmd_sent)
         rc_cmd_sent = -1;
+    let cfg_file;
     switch (rc_cmd) {
         case rc_cmds.CMD_RC_DATA_INVALID:
             set_data_invalid_marker();
             break;
         case rc_cmds.CMD_RC_CFG_COUNT:
-            var count = parseInt(cmd_array[1]);
+            let count = parseInt(cmd_array[1]);
             if (isNaN(count))
                 return;
             if ((cfg_parameter_count != 0) && (count != cfg_parameter_count)) {
@@ -120,11 +123,11 @@ export function process_cmd(data_buffer) {
             status_set(cfg_parameters_states, 'CFG_PARAMETERS_STATE_COUNT');
             break;
         case rc_cmds.CMD_RC_CFG_VALUE:
-            var name = cmd_array[1];
-            var value = cmd_array[2];
-            var text = cmd_array[3];
-            var type = cmd_array[4];
-            var allowed_values = cmd_array.slice(5).join(TOKEN_DELIMITER);
+            let name = cmd_array[1];
+            let value = cmd_array[2];
+            let text = cmd_array[3];
+            let type = cmd_array[4];
+            let allowed_values = cmd_array.slice(5).join(TOKEN_DELIMITER);
             if (cmd_array.length < 6)
                 return;
             if (cfg_parameter_count == 0) {
@@ -134,8 +137,8 @@ export function process_cmd(data_buffer) {
                 send_cmd(rc_cmds.CMD_RC_CFG_VALUE);
                 return;
             }
-            var index = cfg_parameter_value.findIndex(element => element.name == name);
-            var cfg_parameter_value_new = cfg_parameter_value_struct(name, value, text, type, allowed_values);
+            let index = cfg_parameter_value.findIndex(element => element.name == name);
+            let cfg_parameter_value_new = cfg_parameter_value_struct(name, value, text, type, allowed_values);
             if (index >= 0) {
                 cfg_parameter_value[index] = cfg_parameter_value_new;
             }
@@ -148,7 +151,7 @@ export function process_cmd(data_buffer) {
             update_parameters();
             break;
         case rc_cmds.CMD_RC_CFG_FILES:
-            var files = cmd_array.splice(1).sort();
+            let files = cmd_array.splice(1).sort();
             set_cfg_file_list(files);
             if (files.length == 0) {
                 alert("ERROR: No configurations files");
@@ -160,7 +163,7 @@ export function process_cmd(data_buffer) {
             update_cfg_file_list();
             break;
         case rc_cmds.CMD_RC_CFG_LOAD:
-            var cfg_file = cmd_array.splice(1, 1);
+            cfg_file = cmd_array.splice(1, 1);
             if (cfg_file.length == 0) {
                 alert("ERROR: Could not load configuration file");
             }
@@ -168,7 +171,7 @@ export function process_cmd(data_buffer) {
             update_cfg_file_list();
             break;
         case rc_cmds.CMD_RC_CFG_SAVE:
-            var cfg_file = cmd_array.splice(1, 1);
+            cfg_file = cmd_array.splice(1, 1);
             if (cfg_file.length == 0) {
                 alert("ERROR: Could not save configuration file");
             }
@@ -179,7 +182,7 @@ export function process_cmd(data_buffer) {
             send_cmd(rc_cmds.CMD_RC_CFG_FILES);
             break;
         case rc_cmds.CMD_RC_NODES_NAMES:
-            var nodes_names_old = nodes_names;
+            let nodes_names_old = nodes_names;
             set_nodes_names(cmd_array.splice(1));
             if (nodes_names_old.toString() != nodes_names.toString()) {
                 status_clear(graphics_states, 'GRAPHICS_STATE_NODES_NAMES');
@@ -193,7 +196,7 @@ export function process_cmd(data_buffer) {
             }
             break;
         case rc_cmds.CMD_RC_NODES_OMODES:
-            var nodes_omodes_old = nodes_omodes.slice(0);
+            let nodes_omodes_old = nodes_omodes.slice(0);
             set_nodes_omodes(cmd_array.splice(1));
             if (nodes_omodes_old.toString() != nodes_omodes.toString()) {
                 status_clear(graphics_states, 'GRAPHICS_STATE_NODES_OMODES');
@@ -206,8 +209,8 @@ export function process_cmd(data_buffer) {
                     send_cmd(rc_cmds.CMD_RC_NODES_NAMES);
                     return;
                 }
-                display_mode_list = [];
-                display_node_index_list = [];
+                set_display_mode_list([]);
+                set_display_node_index_list([]);
                 for (let i in display_mode_info) {
                     if (nodes_names.includes(display_mode_info[i].node_name_required)) {
                         let dni = nodes_names.findIndex(n => n == display_mode_info[i].node_name_required);
@@ -230,8 +233,8 @@ export function process_cmd(data_buffer) {
             break;
         case rc_cmds.CMD_RC_RUN_GO:
             set_rc_state(rc_states.RC_STATE_GO);
-            ctl_nruns = parseInt(cmd_array[1], 10);
-            trigger_id = parseInt(cmd_array[2], 10);
+            set_ctl_nruns(parseInt(cmd_array[1], 10));
+            set_trigger_id(parseInt(cmd_array[2], 10));
             status_set(controls_states, 'CONTROLS_STATE_STATUS');
             clear_data_invalid_marker();
             update_trigger();

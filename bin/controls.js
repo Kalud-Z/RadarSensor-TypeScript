@@ -1,11 +1,12 @@
 import { states_struct, status_clearall, struct } from './basics.js';
-import { rc_cmd_sent, rc_cmds, send_cmd } from './commands.js';
+import { rc_cmds, send_cmd, set_rc_cmd_sent } from './commands.js';
 import { update_canvas_overlays } from './graphics.js';
 import { cfg_parameter_value } from './config_params.js';
 export const trigger_id_timeout = 0;
 export const trigger_id_internal = 1;
 export const trigger_id_external_hw = 2;
-export var trigger_id;
+export let trigger_id;
+export function set_trigger_id(k) { trigger_id = k; }
 export const rc_states = {
     'RC_STATE_UNDEFINED': 0,
     'RC_STATE_HALT': 1,
@@ -13,27 +14,29 @@ export const rc_states = {
     'RC_STATE_QUIT': 3
 };
 Object.freeze(rc_states);
-export var rc_state;
+export let rc_state;
 export function set_rc_state(state) { rc_state = state; }
 export const controls_states = [
     states_struct('CONTROLS_STATE_CFG_FILES', 0),
     states_struct('CONTROLS_STATE_STATUS', 0)
 ];
-export var ctl_nruns_default = 0;
-export var cfg_file_current;
+export let ctl_nruns_default = 0;
+export let cfg_file_current;
 export function set_cfg_file_current(file) { cfg_file_current = file; }
-export var cfg_file_list;
+export let cfg_file_list;
 export function set_cfg_file_list(list) { cfg_file_list = list; }
 export const display_mode_info_struct = struct('mode', 'node_name_required', 'match_to_pipeline');
-export var display_mode_info = [
+export let display_mode_info = [
     display_mode_info_struct('R/D Map', 'FFT2ABSLOG', 'RDMAP'),
     display_mode_info_struct('CFAR', 'CFAR', 'CFAR')
 ];
-export var display_mode_combined = "Combined";
-export var display_mode_list;
-export var display_node_index_list;
-export var display_mode;
-export var node_index_required;
+export let display_mode_combined = "Combined";
+export let display_mode_list;
+export function set_display_mode_list(k) { display_mode_list = k; }
+export let display_node_index_list;
+export function set_display_node_index_list(k) { display_node_index_list = k; }
+export let display_mode;
+export let node_index_required;
 export function run_stop_handler() {
     $("#ctl_run").attr("disabled", "disabled");
     switch (rc_state) {
@@ -57,6 +60,7 @@ export function quit_handler() {
     $("#ctl_quit").attr("disabled", "disabled");
 }
 export let ctl_nruns;
+export function set_ctl_nruns(k) { ctl_nruns = k; }
 export function nruns_handler() {
     ctl_nruns = $('#ctl_nruns').val();
 }
@@ -66,7 +70,8 @@ export function cfg_file_load_handler() {
 }
 export function cfg_file_save_handler() {
     if ($('#ctl_cfg_file_save_name').val() != '') {
-        var path_elements = $('#ctl_cfg_file_save_name').val().split(/[\\\/]+/);
+        let temp = $('#ctl_cfg_file_save_name').val();
+        let path_elements = temp.split(/[\\\/]+/);
         send_cmd(rc_cmds.CMD_RC_CFG_SAVE, path_elements[path_elements.length - 1]);
         $("#ctl_cfg_file_save_name").val('');
     }
@@ -123,14 +128,14 @@ export function update_trigger() {
 }
 export function update_cfg_file_list() {
     $("#ctl_cfg_file_load_name option").remove();
-    for (var index in cfg_file_list) {
+    for (let index in cfg_file_list) {
         $("#ctl_cfg_file_load_name").append("<option>" + cfg_file_list[index] + "</option>");
     }
     $("#ctl_cfg_file_load_name").val(cfg_file_current);
 }
 export function update_display_mode_list() {
     $("#ctl_display_mode option").remove();
-    for (var index in display_mode_list) {
+    for (let index in display_mode_list) {
         $("#ctl_display_mode").append("<option>" + display_mode_list[index] + "</option>");
         if (cfg_parameter_value.find(n => n.name == "pipeline_type").current_value == display_mode_info.find(n => n.mode == display_mode_list[index]).match_to_pipeline) {
             $("#ctl_display_mode").val(display_mode_list[index]);
@@ -196,7 +201,7 @@ export function init_controls() {
     $('#ctl_cfg_file_load_name').val(cfg_file_current);
     $('#ctl_nruns').val(ctl_nruns_default);
     rc_state = rc_states.RC_STATE_UNDEFINED;
-    rc_cmd_sent = -1;
+    set_rc_cmd_sent(-1);
     trigger_id = trigger_id_internal;
     $('#ctl_trigger_source').val('Internal');
     $('#ctl_trigger_id').attr('min', trigger_id_external_hw + 1);

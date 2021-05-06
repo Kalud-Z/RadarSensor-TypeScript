@@ -1,5 +1,5 @@
 import { states_struct, status_clearall, struct } from './basics.js';
-import { cfg_file_current, rc_state, rc_states } from './controls.js';
+import { rc_state, rc_states, set_cfg_file_current } from './controls.js';
 import { rc_cmds, send_cmd } from './commands.js';
 export const RE_TOKEN_DELIMS = /[;\n]+/;
 export const TOKEN_DELIMITER = ";";
@@ -59,7 +59,7 @@ export function check_parameter(parameter) {
     value = $("#" + input_id).val();
     if (value_old != value) {
         send_cmd(rc_cmds.CMD_RC_CFG_VALUE, name, value);
-        cfg_file_current = '';
+        set_cfg_file_current('');
         $("#ctl_cfg_file_load_name").val("");
     }
     cfg_parameter_value[i].current_value = $("#" + input_id).val();
