@@ -12,6 +12,8 @@ import { controls_states, display_mode, display_mode_list, display_node_index_li
 import { request_initial_config } from './commands.js';
 import { arraybuffer2type_header, TYPE_HEADER_SIZE_BYTES } from './headers.js';
 
+// import $ from "jquery";
+// import * as $ from "jquery";
 
 
 

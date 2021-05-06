@@ -4,8 +4,9 @@
 		"module": "es2015",
         "moduleResolution": "node",
 		"outDir": "bin",
-		"removeComments": true
-	},
+		"removeComments": true,
+        "allowSyntheticDefaultImports": true
+    },
     "include": [
         "src/**/*"
     ],

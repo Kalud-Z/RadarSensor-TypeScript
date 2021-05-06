@@ -16,7 +16,7 @@ function update_window() {
     update_controls();
     update_parameters();
 }
-jQuery(document).ready(function ($) {
+function start() {
     init_window();
     update_window();
     set_ws(new_ws('ws://192.168.1.101:4000/', "rc"));
@@ -74,4 +74,5 @@ jQuery(document).ready(function ($) {
     $('#ctl_trigger_id').change(trigger_handler);
     $('#ctl_cfg_file_load_name').change(cfg_file_load_handler);
     $('#ctl_cfg_file_save').click(cfg_file_save_handler);
-});
+}
+setTimeout(start, 3000);
