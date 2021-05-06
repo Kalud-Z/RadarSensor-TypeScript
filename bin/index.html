@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+	
+    <title>Typescript Starter</title>
+    <link rel="stylesheet" href="main.css"/>
+    <meta name="description" content="Typescript Starter">
+    <meta name="author" content="https://github.com/nea">
+  </head>
+
+  <body>
+  <div id="grid_top">
+      <div id="grid_graphics_container" class="box"> <!-- this elements are being handeled by rc_graphics.js	-->
+          <div id="grid_graphics">
+              <div id="grid_graphics_image">
+                  <canvas id="image_scale_canvas"></canvas>
+                  <canvas id="image_rdmap_canvas"></canvas>
+                  <canvas id="image_cfar_canvas"></canvas>
+                  <canvas id="image_cfar_highlight_canvas"></canvas>
+              </div>
+
+              <div id="grid_graphics_spacer">
+              </div>
+
+              <div id="grid_graphics_colorbar_slider">
+                  <div id="colorbar_slider"></div>
+              </div>
+
+              <div id="grid_graphics_colorbar">
+                  <div id="colorbar_red"></div>
+                  <div id="colorbar_red2yellow"></div>
+                  <div id="colorbar_yellow2green"></div>
+                  <div id="colorbar_green2cyan"></div>
+                  <div id="colorbar_cyan2blue"></div>
+                  <div id="colorbar_blue"></div>
+              </div>
+
+              <div id="grid_graphics_colorbar_scale">
+                  <canvas id="colorbar_scale_canvas"></canvas>
+              </div>
+          </div>
+      </div>
+
+      <div id="grid_control_container" class="box"> <!--	these elements are being handled by rc_controls.js	-->
+          <div>
+              <input type="button" value="Quit" id="ctl_quit">
+              <input type="button" id="ctl_run">
+              <label for="ctl_nruns">Runs (0=endless):</label>
+              <input type="number" id="ctl_nruns" name="ctl_nruns" min="0">
+          </div>
+          <div>
+              <label for="ctl_cfg_file_load_name">Load Config File:</label>
+              <select id="ctl_cfg_file_load_name"></select>
+              <label for="ctl_cfg_file_save_name">Save Config File:</label>
+              <input type="text" id="ctl_cfg_file_save_name" name="ctl_cfg_file_save_name">
+              <input type="button" value="Save" id="ctl_cfg_file_save">
+          </div>
+          <div>
+              <label for="ctl_trigger_source">Trigger Source:</label>
+              <select id="ctl_trigger_source">
+                  <option>Internal</option>
+                  <option>External (HW)</option>
+                  <option>External (SW)</option>
+              </select>
+              <label for="ctl_trigger_id">Ext. SW Trigger ID:</label>
+              <input type="number" id="ctl_trigger_id" name="ctl_trigger_id">
+          </div>
+          <div>
+              <label for="ctl_display_mode">Display Mode:</label>
+              <select id="ctl_display_mode"></select>
+          </div>
+      </div>
+
+      <div id="grid_parameters_container" class="box"> <!-- this element being handled by rc_cfg_parameters -->
+      </div>
+  </div>
+
+
+
+  <script type="module" src="../bin/main.js"></script>
+  <script type="module" src="../bin/headers.js"></script>
+  <script type="module" src="../bin/basics.js"></script>
+  <script type="module" src="../bin/graphics.js"></script>
+  <script type="module" src="../bin/commands.js"></script>
+  <script type="module" src="../bin/config_params.js"></script>
+  <script type="module" src="../bin/controls.js"></script>
+  </body>
+
+
+</html>
